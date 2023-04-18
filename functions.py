@@ -1,11 +1,16 @@
 from matplotlib.pyplot import imread
 from PIL import Image
 
-ASCII_CHARACTERS = r'''$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,"^`'.'''
+ASCII_CHARACTERS = r'''$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,"^`'. '''
 ASCII_BASE = len(ASCII_CHARACTERS)
 
 def help_text():
-    print('To use this program run command like this:\npython <script>.py <path_to_file>.png <width> <height>')
+    print('''
+To use this program run command like this:
+python <script>.py <path_to_file>.png <width> <height> in python script
+    or
+ascii-converter.exe <path_to_file>.png <width> <height> in application
+        ''')
 
 def read_image(path: str):
     return imread(path)
@@ -14,7 +19,8 @@ def save_image(array, name):
     Image.fromarray(array).save(f"samples/{name}.png")
 
 def convert_to_grayscale(image):
-    height, width, _ = image.shape
+    height, width, channels = image.shape
+    if channels < 3: return image # Image is already grayscale
 
     for y in range(width):
         for x in range(height):
