@@ -2,14 +2,15 @@ import functions as fs
 import coloring as cl
 from os.path import splitext
 from sys import argv
-from time import time
+from time import perf_counter
 
-_time = time()
+_time = perf_counter()
 
 def update_time(message, color):
     global _time
-    print(f'{color}{message} in {(time()-_time):.3f}s{cl.RESET}')
-    _time = time()
+    new_time = perf_counter()
+    print(f'{color}{message} in {(new_time-_time):.4f}s{cl.RESET}')
+    _time = new_time
 
 def main(args):
     if len(args) != 3 or '-help' in args:
