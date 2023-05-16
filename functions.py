@@ -1,63 +1,71 @@
-from matplotlib.pyplot import imread
-from PIL import Image
-
-ASCII_CHARACTERS = r'''$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,"^`'. '''
+from matplotlib.pyplot import imread, imsave
+import numpy as np
+from prefab_arrays import PrefabArray
+ASCII_CHARACTERS = [' ', '.', ':', '-', '=', '+', '*', '#', '%', '@']
 ASCII_BASE = len(ASCII_CHARACTERS)
+WEIGHTS = 0.21, 0.72, 0.07
+
 
 def help_text():
     print('''
 To use this program run command like this:
-python <script>.py <path_to_file>.png <width> <height> in python script
-    or
-ascii-converter.exe <path_to_file>.png <width> <height> in application
-        ''')
+python <script>.py <path_to_file>.png <width> <height> <ascii_array_name>
+Here's all the names of ascii arrays available:''')
+    print(', '.join(PrefabArray.get_all()))
+
 
 def read_image(path: str):
-    return imread(path)
+    return imread(path)[...,:3] * 255
 
-def save_image(array, name):
-    Image.fromarray(array).save(f"samples/{name}.png")
 
-def convert_to_grayscale(image):
-    height, width, channels = image.shape
-    if channels < 3: return image # Image is already grayscale
+def save_image(image, name):
+    imsave(f"samples/{name}.png", image, cmap='gray')
 
-    for y in range(width):
-        for x in range(height):
-            pixel = image[x][y]
-            r, g, b = pixel[:3] # Don't need alpha channel if it has one
-            luminance = int(0.21*r + 0.72*g + 0.07*b) # Calculating luminance
-            image[x][y] = luminance
 
-    return image 
+def convert_to_grayscale(image, fast = True):
+    return np.dot(image, WEIGHTS) if fast else \
+        [[int(sum(pixel * weight for pixel, weight in zip(row[x], WEIGHTS))) for x in range(len(row))] for row in image]
+
 
 def resize_image(image, new_size):
-    original_height, original_width, _ = image.shape
+    original_height, original_width = len(image), len(image[0])
 
     new_width, new_height = new_size
 
-    resized_image = [[0 for _ in range(new_height)] for _ in range(new_width)]
+    resized_image = np.zeros((new_height, new_width))
     
+    y_scale = original_width / new_width
+    x_scale = original_height / new_height
+
     for y in range(new_width):
         for x in range(new_height):
             # Calculate coordinates of a pixel in original image
-            orig_y = int(y * original_width / new_width)
-            orig_x = int(x * original_height / new_height)
+            orig_y = int(y * y_scale)
+            orig_x = int(x * x_scale)
 
-            orig_color = image[orig_x][orig_y][0]
-            resized_image[y][x] = orig_color
+            try:
+                resized_image[x][y] = image[orig_x][orig_y]
+            except ValueError:
+                resized_image[x][y] = image[orig_x][orig_y][0]
     
     return resized_image
 
-def convert_to_ascii(array):
+
+def convert_to_ascii(image, ascii_array = PrefabArray.get_array('detailed')):
+    base = len(ascii_array)
+
+    def get_ascii_character(luminance):
+        return ascii_array[int(luminance/255*base)]
+    
     result = []
-    height, width = len(array), len(array[0])
-    for y in range(width):
+    width, height = len(image), len(image[0])
+    for x in range(width):
         line = []
-        for x in range(height):
-            line.append(get_ascii_character(array[x][y]))
+        for y in range(height):
+            line.append(get_ascii_character(image[x][y]))
         result.append(line)
     return result
 
-def get_ascii_character(luminance):
-    return ASCII_CHARACTERS[int(luminance/255*ASCII_BASE)]
+
+def matrix_to_text(matrix):
+    return '\n'.join(map(''.join, matrix))
