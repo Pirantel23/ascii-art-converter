@@ -1,4 +1,6 @@
 from enum import Enum
+
+
 class PrefabArray(Enum):
     DETAILED = [' ', '.', ':', '-', '=', '+', '*', '#', '%', '@']
     FULL = [' ', '.', '\'', '`', '^', '"', ',', ':', ';',
@@ -19,9 +21,12 @@ class PrefabArray(Enum):
     GRAIL = ['#', '%', '+', '=', '*', ':', '.', ' ']
     SHADE = [' ', '░', '▒', '▓', '█']
     
+
     @classmethod
     def get_array(cls, name):
         return cls[name.upper()].value
+    
+
     @classmethod
     def get_all(cls):
-        return list(map(lambda item: cls[item], cls.__dict__['_member_names_']))
+        return [array.name for array in PrefabArray]
