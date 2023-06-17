@@ -1,5 +1,11 @@
-from matplotlib.pyplot import imread, imsave
-import numpy as np
+try:
+    from matplotlib.pyplot import imread, imsave
+except ModuleNotFoundError:
+    import pip
+    pip.main(['install','--quiet','numpy'])
+    pip.main(['install','--quiet','matplotlib'])
+    from matplotlib.pyplot import imread, imsave
+
 from prefab_arrays import PrefabArray
 ASCII_CHARACTERS = [' ', '.', ':', '-', '=', '+', '*', '#', '%', '@']
 ASCII_BASE = len(ASCII_CHARACTERS)
@@ -22,9 +28,8 @@ def save_image(image, name):
     imsave(f"samples/{name}.png", image, cmap='gray')
 
 
-def convert_to_grayscale(image, fast = True):
-    return np.dot(image, WEIGHTS) if fast else \
-        [[int(sum(pixel * weight for pixel, weight in zip(row[x], WEIGHTS))) for x in range(len(row))] for row in image]
+def convert_to_grayscale(image):
+    return [[int(sum(pixel * weight for pixel, weight in zip(row[x], WEIGHTS))) for x in range(len(row))] for row in image]
 
 
 def resize_image(image, new_size):
@@ -32,7 +37,7 @@ def resize_image(image, new_size):
 
     new_width, new_height = new_size
 
-    resized_image = np.zeros((new_height, new_width))
+    resized_image = [[0 for _ in range(new_width)] for _ in range(new_height)]
     
     y_scale = original_width / new_width
     x_scale = original_height / new_height

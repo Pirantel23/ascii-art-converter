@@ -4,6 +4,8 @@ from os.path import splitext
 from sys import argv
 from time import perf_counter
 from prefab_arrays import PrefabArray
+from viewer import TextViewer
+from tkinter import Tk
 
 _time = perf_counter()
 
@@ -36,6 +38,19 @@ def main(args):
         f.write(text)
 
     print(f'{cl.BLUE}Done! Result was saved in file: {result_file}{cl.RESET}')
+
+    print('Opening ASCII art in viewer')
+
+    root = Tk()
+    root.title("Text Viewer")
+    root.geometry("800x600")
+    viewer = TextViewer(root)
+
+    viewer.set_text(text)
+
+    viewer.set_font_size(1)
+
+    root.mainloop()
 
 if __name__ == '__main__':
     main(argv[1:])
